@@ -1,5 +1,11 @@
 # evlog
 
+## 2.31.1
+
+### Patch Changes
+
+- [#843](https://github.com/evloghq/evlog/pull/843) [`f3541b1`](https://github.com/evloghq/evlog/commit/f3541b1573a9482abc16f09365ed7076c6bc4f62) Thanks [@HugoRCD](https://github.com/HugoRCD)! - Fix `request.log` on `@nestjs/platform-fastify`. `EvlogModule` now sets the evlog logger on `FastifyRequest.log` before guards, interceptors, pipes, and controllers run, so `request.log.set(...)` no longer throws `TypeError: request.log.set is not a function`. `FastifyRequest.log` is typed as the evlog logger when `evlog/nestjs` is imported.
+
 ## 2.31.0
 
 ### Minor Changes
