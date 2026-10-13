@@ -2,7 +2,7 @@ import type { WideEvent } from '../types'
 import type { ConfigField } from '../shared/config'
 import { formatPublicEnvKeys, resolveAdapterConfig } from '../shared/config'
 import { defineDrain } from '../shared/drain'
-import type { OTLPConfig } from './otlp'
+import type { OTLPConfig, OTLPRecordShape } from './otlp'
 import { sendBatchToOTLP } from './otlp'
 
 export interface SazabiConfig {
@@ -21,6 +21,13 @@ export interface SazabiConfig {
   timeout?: number
   /** Number of retry attempts on transient failures. Default: 2 */
   retries?: number
+  /**
+   * Log record shape. Default: `'compact'`: the body is a one-line summary (`POST /api/checkout (500)`) and
+   * nested fields flatten to dotted attributes (`user.plan`) that can be filtered on in Sazabi.
+   * `'json'` sends the serialized event as the body.
+   * @see {@link OTLPRecordShape}
+   */
+  recordShape?: OTLPRecordShape
 }
 
 const ENDPOINT_ENV = ['NUXT_SAZABI_INTAKE_URL', 'SAZABI_INTAKE_URL']
@@ -31,6 +38,7 @@ const SAZABI_FIELDS: ConfigField<SazabiConfig>[] = [
   { key: 'resourceAttributes' },
   { key: 'timeout' },
   { key: 'retries' },
+  { key: 'recordShape' },
 ]
 
 /**
@@ -43,7 +51,8 @@ export function toSazabiOTLPEndpoint(endpoint: string): string {
 
 /**
  * Map Sazabi config to {@link OTLPConfig}. Sazabi ingests OTLP/HTTP logs at
- * `<intake URL>/v1/logs`; the key lives in the URL, so no headers are added.
+ * `<intake URL>/v1/logs`; the key lives in the URL, so no headers are added. Records use the
+ * `'compact'` shape unless `recordShape` says otherwise.
  */
 export function toSazabiOTLPConfig(config: SazabiConfig): OTLPConfig {
   return {
@@ -52,6 +61,7 @@ export function toSazabiOTLPConfig(config: SazabiConfig): OTLPConfig {
     resourceAttributes: config.resourceAttributes,
     timeout: config.timeout,
     retries: config.retries,
+    recordShape: config.recordShape ?? 'compact',
   }
 }
 

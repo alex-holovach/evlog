@@ -58,8 +58,37 @@ describe('sazabi adapter', () => {
         resourceAttributes: undefined,
         timeout: 1000,
         retries: 1,
+        recordShape: 'compact',
       })
       expect(otlp.headers).toBeUndefined()
+    })
+
+    it('keeps an explicit record shape', () => {
+      expect(toSazabiOTLPConfig({ endpoint: INTAKE_URL, recordShape: 'json' }).recordShape).toBe('json')
+    })
+  })
+
+  describe('record shape', () => {
+    const event = () => makeWideEvent({ method: 'POST', path: '/api/checkout', status: 500, user: { plan: 'pro' } })
+    const firstRecord = () => {
+      const body = getFetchJson<OTLPExportLogsRequest>(fetchSpy)
+      const resourceLog = defined(body.resourceLogs[0], 'resourceLogs[0]')
+      const scopeLog = defined(resourceLog.scopeLogs[0], 'scopeLogs[0]')
+      return defined(scopeLog.logRecords[0], 'logRecords[0]')
+    }
+
+    it('sends the compact shape by default: a one-line summary body and dotted attributes', async () => {
+      await sendToSazabi(event(), { endpoint: INTAKE_URL })
+
+      const record = firstRecord()
+      expect(record.body.stringValue).toBe('POST /api/checkout (500)')
+      expect(record.attributes).toContainEqual({ key: 'user.plan', value: { stringValue: 'pro' } })
+    })
+
+    it('sends the serialized event as the body when recordShape is json', async () => {
+      await sendToSazabi(event(), { endpoint: INTAKE_URL, recordShape: 'json' })
+
+      expect(JSON.parse(firstRecord().body.stringValue)).toMatchObject({ path: '/api/checkout', user: { plan: 'pro' } })
     })
   })
 
