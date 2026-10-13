@@ -1,6 +1,6 @@
 ---
 name: review-logging-patterns
-description: Review code for logging patterns and suggest evlog adoption. Optionally use the evlog CLI, shipped with the evlog package (`evlog init` to wire evlog, `evlog agents` to write the conventions into AGENTS.md, `evlog map` to score entry-point coverage, `--baseline` to gate regressions in CI) on Nuxt, Nitro, Next.js, TanStack Start, Hono, Express, and Fastify. Guides setup on those plus SvelteKit, React Router, NestJS, Express, Fastify, Elysia, oRPC, Cloudflare Workers, AWS Lambda, Astro, and standalone TypeScript. Detects console.log spam, unstructured errors, and missing context. Covers wide events, structured errors, drain adapters (Axiom, OTLP, HyperDX, PostHog, Sentry, Better Stack, Datadog, Loki, ClickHouse, NuxtHub, Memory), sampling, enrichers, and AI SDK integration.
+description: Review code for logging patterns and suggest evlog adoption. Optionally use the evlog CLI, shipped with the evlog package (`evlog init` to wire evlog, `evlog agents` to write the conventions into AGENTS.md, `evlog map` to score entry-point coverage, `--baseline` to gate regressions in CI) on Nuxt, Nitro, Next.js, TanStack Start, Hono, Express, and Fastify. Guides setup on those plus SvelteKit, React Router, NestJS, Express, Fastify, Elysia, oRPC, Cloudflare Workers, AWS Lambda, Astro, and standalone TypeScript. Detects console.log spam, unstructured errors, and missing context. Covers wide events, structured errors, drain adapters (Axiom, OTLP, HyperDX, Sazabi, PostHog, Sentry, Better Stack, Datadog, Loki, ClickHouse, NuxtHub, Memory), sampling, enrichers, and AI SDK integration.
 license: MIT
 metadata:
   author: HugoRCD
@@ -949,6 +949,7 @@ They can also live in `evlog.config.ts`, written with `defineEvlog()`. Nuxt and 
 | Axiom | `evlog/axiom` | `AXIOM_API_KEY`, `AXIOM_DATASET` |
 | OTLP | `evlog/otlp` | `OTLP_ENDPOINT` (or the standard `OTEL_EXPORTER_OTLP_[LOGS_]ENDPOINT`, `_HEADERS`, `_COMPRESSION`, `_PROTOCOL`, `OTEL_RESOURCE_ATTRIBUTES`). `protocol: 'http/protobuf'` sends binary protobuf. `semanticConventions: true` adds OTel attribute names (`http.*`, `exception.*`, `gen_ai.*`) |
 | HyperDX | `evlog/hyperdx` | `HYPERDX_API_KEY` (optional `HYPERDX_OTLP_ENDPOINT`; defaults to `https://in-otel.hyperdx.io`) |
+| Sazabi | `evlog/sazabi` | `SAZABI_INTAKE_URL` (the log stream's intake URL; its key is part of the URL), optional `SAZABI_SERVICE_NAME` |
 | PostHog | `evlog/posthog` | `POSTHOG_API_KEY`, `POSTHOG_HOST` |
 | Sentry | `evlog/sentry` | `SENTRY_DSN` |
 | Better Stack | `evlog/better-stack` | `BETTER_STACK_API_KEY` |

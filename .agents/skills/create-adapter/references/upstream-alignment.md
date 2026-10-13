@@ -14,6 +14,7 @@ One row per drain adapter that talks to a third-party API. The row names the aut
 | `loki.ts` | https://grafana.com/docs/loki/latest/reference/loki-http-api/#ingest-logs | `grafana/alloy` (`loki.write` component; Promtail is retired) | the first run pins the file | unset |
 | `otlp.ts`, `otlp-protobuf.ts` | https://opentelemetry.io/docs/specs/otlp/ | `open-telemetry/opentelemetry-js` (`@opentelemetry/exporter-logs-otlp-http`) | `experimental/packages/exporter-logs-otlp-http/src/platform/node/OTLPLogExporter.ts`, `experimental/packages/otlp-exporter-base/src/configuration/otlp-http-configuration.ts` | unset |
 | `posthog.ts` | https://posthog.com/docs/api/capture | `PostHog/posthog-js` (`posthog-node`) | `packages/node/src/client.ts`, `packages/core/src/posthog-core.ts` | unset |
+| `sazabi.ts` | https://docs.sazabi.com (OTLP/HTTP log streams) | none: OTLP/HTTP through evlog's own encoder (`otlp.ts`) | `packages/evlog/src/adapters/otlp.ts` | unset |
 | `sentry.ts` | https://develop.sentry.dev/sdk/data-model/envelopes/ | `getsentry/sentry-javascript` (`@sentry/core`) | `packages/core/src/envelope.ts`, `packages/core/src/transports/base.ts` | unset |
 
 `Aligned to` is the client's published version and the evlog commit that last matched it, written as `@sentry/core 11.2.0 @ 5e0d543`. `unset` means no run has compared the two yet; the first run over that adapter writes the first pin and files every mismatch it finds along the way.

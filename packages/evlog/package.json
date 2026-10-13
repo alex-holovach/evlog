@@ -119,6 +119,11 @@
       "import": "./dist/adapters/clickhouse.mjs",
       "default": "./dist/adapters/clickhouse.mjs"
     },
+    "./sazabi": {
+      "types": "./dist/adapters/sazabi.d.mts",
+      "import": "./dist/adapters/sazabi.mjs",
+      "default": "./dist/adapters/sazabi.mjs"
+    },
     "./fs": {
       "types": "./dist/adapters/fs.d.mts",
       "import": "./dist/adapters/fs.mjs",
@@ -313,6 +318,9 @@
       ],
       "clickhouse": [
         "./dist/adapters/clickhouse.d.mts"
+      ],
+      "sazabi": [
+        "./dist/adapters/sazabi.d.mts"
       ],
       "fs": [
         "./dist/adapters/fs.d.mts"
