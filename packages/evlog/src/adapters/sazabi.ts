@@ -75,7 +75,7 @@ export function createSazabiDrain(overrides?: Partial<SazabiConfig>) {
     name: 'sazabi',
     resolve: async () => {
       const config = await resolveAdapterConfig<SazabiConfig>('sazabi', SAZABI_FIELDS, overrides)
-      if (!config.endpoint) {
+      if (!config.endpoint || !toSazabiOTLPEndpoint(config.endpoint)) {
         console.error(`[evlog/sazabi] Missing endpoint. Set ${formatPublicEnvKeys(ENDPOINT_ENV)}, or pass to createSazabiDrain()`)
         return null
       }

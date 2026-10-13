@@ -9,6 +9,7 @@ import {
 import type { OTLPExportLogsRequest } from '../../src/adapters/otlp'
 import { getFetchCall, getFetchHeaders, getFetchJson, mockFetch } from '../helpers/fetch'
 import { makeContext, makeWideEvent } from '../helpers/events'
+import { defined } from '../helpers/defined'
 
 const INTAKE_URL = 'https://0123456789abcdef0123456789abcdef.us-west-2.intake.sazabi.com'
 const ENV_KEYS = ['NUXT_SAZABI_INTAKE_URL', 'SAZABI_INTAKE_URL', 'NUXT_SAZABI_SERVICE_NAME', 'SAZABI_SERVICE_NAME', 'OTEL_SERVICE_NAME'] as const
@@ -93,10 +94,12 @@ describe('sazabi adapter', () => {
       })
 
       const body = getFetchJson<OTLPExportLogsRequest>(fetchSpy)
-      const resource = body.resourceLogs[0]!.resource.attributes
+      const resourceLog = defined(body.resourceLogs[0], 'resourceLogs[0]')
+      const resource = resourceLog.resource.attributes
       expect(resource).toContainEqual({ key: 'service.name', value: { stringValue: 'checkout' } })
       expect(resource).toContainEqual({ key: 'deployment.region', value: { stringValue: 'us-west-2' } })
-      const record = body.resourceLogs[0]!.scopeLogs[0]!.logRecords[0]!
+      const scopeLog = defined(resourceLog.scopeLogs[0], 'scopeLogs[0]')
+      const record = defined(scopeLog.logRecords[0], 'logRecords[0]')
       expect(record.severityText).toBe('ERROR')
       expect(JSON.stringify(record.attributes)).toContain('/api/pay')
     })
@@ -107,8 +110,9 @@ describe('sazabi adapter', () => {
       await sendBatchToSazabi([makeWideEvent({ requestId: 'a' }), makeWideEvent({ requestId: 'b' })], { endpoint: INTAKE_URL })
 
       expect(fetchSpy).toHaveBeenCalledTimes(1)
-      const body = getFetchJson<OTLPExportLogsRequest>(fetchSpy)
-      expect(body.resourceLogs[0]!.scopeLogs[0]!.logRecords).toHaveLength(2)
+      const resourceLog = defined(getFetchJson<OTLPExportLogsRequest>(fetchSpy).resourceLogs[0], 'resourceLogs[0]')
+      const scopeLog = defined(resourceLog.scopeLogs[0], 'scopeLogs[0]')
+      expect(scopeLog.logRecords).toHaveLength(2)
     })
 
     it('skips fetch for an empty batch', async () => {
@@ -132,7 +136,8 @@ describe('sazabi adapter', () => {
       await createSazabiDrain()(makeContext(makeWideEvent()))
 
       expect(getFetchCall(fetchSpy).url).toBe(`${INTAKE_URL}/v1/logs`)
-      const resource = getFetchJson<OTLPExportLogsRequest>(fetchSpy).resourceLogs[0]!.resource.attributes
+      const resourceLog = defined(getFetchJson<OTLPExportLogsRequest>(fetchSpy).resourceLogs[0], 'resourceLogs[0]')
+      const resource = resourceLog.resource.attributes
       expect(resource).toContainEqual({ key: 'service.name', value: { stringValue: 'worker' } })
     })
 
@@ -145,11 +150,22 @@ describe('sazabi adapter', () => {
       expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('[evlog/sazabi] Missing endpoint. Set SAZABI_INTAKE_URL'))
     })
 
+    it('treats an endpoint that normalizes to empty as missing', async () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      await createSazabiDrain({ endpoint: '  /v1/logs/ ' })(makeContext(makeWideEvent()))
+
+      expect(fetchSpy).not.toHaveBeenCalled()
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('[evlog/sazabi] Missing endpoint'))
+    })
+
     it('batches multiple contexts into one request', async () => {
       await createSazabiDrain({ endpoint: INTAKE_URL })([makeContext(makeWideEvent()), makeContext(makeWideEvent())])
 
       expect(fetchSpy).toHaveBeenCalledTimes(1)
-      expect(getFetchJson<OTLPExportLogsRequest>(fetchSpy).resourceLogs[0]!.scopeLogs[0]!.logRecords).toHaveLength(2)
+      const resourceLog = defined(getFetchJson<OTLPExportLogsRequest>(fetchSpy).resourceLogs[0], 'resourceLogs[0]')
+      const scopeLog = defined(resourceLog.scopeLogs[0], 'scopeLogs[0]')
+      expect(scopeLog.logRecords).toHaveLength(2)
     })
   })
 })
